@@ -3,703 +3,1122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MA Strategy AI | 智能操盤室 Ultimate</title>
+    <title>曼谷家庭五日遊 | AI 智慧版</title>
     
-    <!-- Libraries -->
+    <!-- PWA 設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#0d9488">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Markdown Parser (for AI response) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' },
-                        emerald: { 450: '#10b981', 550: '#059669' },
-                    },
-                    boxShadow: {
-                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-                        'glow': '0 0 15px rgba(16, 185, 129, 0.2)',
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
-        /* --- 核心樣式 --- */
-        body { background-color: #F8FAFC; color: #334155; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            padding-bottom: 6rem; 
+            background-color: #f8fafc;
+            color: #334155;
+        }
         
-        /* --- 滾動條美化 --- */
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .timeline-line::before { 
+            content: ''; 
+            position: absolute; 
+            top: 10px; 
+            bottom: -10px; 
+            left: 19px; 
+            width: 2px; 
+            background: #cbd5e1; 
+            z-index: 0; 
+        }
+        .timeline-item:last-child .timeline-line::before { display: none; }
 
-        /* --- 互動元件 --- */
-        .upload-zone { 
-            border: 2px dashed #E2E8F0; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            background: #F8FAFC;
-        }
-        .upload-zone:hover, .upload-zone.active { 
-            border-color: #10B981; 
-            background-color: #F0FDF4; 
-            transform: translateY(-1px);
+        .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
         
-        /* --- Chip (修復版) --- */
-        .chip-container {
+        .nav-item { color: #94a3b8; transition: all 0.2s; }
+        .nav-item.active { color: #0d9488; }
+        .nav-item.active i { transform: translateY(-2px); }
+        .nav-item.active span { font-weight: 600; }
+        
+        .flight-card-bg { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+        .transport-badge {
             display: inline-flex;
             align-items: center;
-            background-color: #FFFFFF;
-            border: 1px solid #E2E8F0;
-            border-radius: 9999px;
-            padding: 2px 4px 2px 12px;
-            margin-right: 6px;
-            transition: all 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            font-size: 0.75rem;
+            background-color: #f1f5f9;
+            color: #64748b;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-top: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .transport-badge i { margin-right: 4px; color: #0d9488; }
+
+        .app-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            padding: 1rem;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .app-card:active {
+            transform: scale(0.98);
+            background-color: #fafafa;
+        }
+        
+        .icon-box {
+            width: 3rem; 
+            height: 3rem; 
+            border-radius: 0.75rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .day-btn { transition: all 0.2s; border-radius: 9999px; padding: 0.5rem 1.25rem; font-size: 0.875rem; }
+        .day-btn.active { background-color: #0d9488; color: white; box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3); font-weight: 700; }
+        .day-btn.inactive { background-color: white; color: #64748b; border: 1px solid #e2e8f0; font-weight: 500; }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid #0d9488;
+            line-height: 1.2;
+        }
+        
+        .product-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .product-card:active { transform: scale(0.95); background-color: #f0fdfa; }
+
+        .copper-info-box {
+            background-color: #fef2f2;
+            border-left: 5px solid #ef4444;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .copper-info-box h4 { font-weight: 700; color: #b91c1c; margin-bottom: 0.5rem; }
+
+        .shrine-face {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
             font-weight: 600;
-            color: #475569;
-            user-select: none;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
-        .chip-container:hover {
-            border-color: #10B981;
-            color: #10B981;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .face-1 { background-color: #f0f9ff; color: #0284c7; } 
+        .face-2 { background-color: #fff7ed; color: #f97316; } 
+        .face-3 { background-color: #f0fdf4; color: #10b981; } 
+        .face-4 { background-color: #f5f3ff; color: #8b5cf6; } 
+
+        .truffle-highlight {
+            font-weight: 700;
+            color: #b91c1c;
+            padding: 2px 5px;
+            background-color: #fee2e2;
+            border-radius: 4px;
+            display: inline-block;
         }
-        .chip-text {
-            cursor: pointer;
-            margin-right: 6px;
+        
+        .tag {
+            display: inline-block; padding: 2px 8px; border-radius: 9999px;
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
         }
-        .chip-delete {
-            width: 18px;
-            height: 18px;
+        .tag-blue { background: #dbeafe; color: #1e40af; }
+        .tag-orange { background: #ffedd5; color: #9a3412; }
+
+        /* AI Floating Button */
+        .ai-fab {
+            position: fixed;
+            bottom: 5.5rem;
+            right: 1.5rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #CBD5E1;
-            cursor: pointer;
-            transition: all 0.2s;
+            color: white;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+            z-index: 40;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid white;
         }
-        .chip-delete:hover {
-            background-color: #FEE2E2;
-            color: #EF4444;
+        .ai-fab:active { transform: scale(0.9); }
+        .ai-fab i { font-size: 1.5rem; }
+
+        /* AI Chat Bubble Styles */
+        .chat-bubble { max-width: 80%; padding: 0.75rem 1rem; border-radius: 1rem; margin-bottom: 0.75rem; text-sm; line-height: 1.5; }
+        .chat-user { background-color: #f1f5f9; color: #334155; margin-left: auto; border-bottom-right-radius: 0.25rem; }
+        .chat-ai { background-color: #f0fdfa; color: #0f766e; border: 1px solid #ccfbf1; border-bottom-left-radius: 0.25rem; }
+        .typing-indicator span {
+            display: inline-block; width: 6px; height: 6px; background-color: #cbd5e1; border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both; margin: 0 2px;
         }
-
-        /* --- Markdown 樣式 --- */
-        .prose h1, .prose h2, .prose h3 { color: #0F172A; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; }
-        .prose strong { color: #0F172A; font-weight: 600; background: #F1F5F9; padding: 0 4px; border-radius: 3px; }
-        .prose p { margin-bottom: 0.8em; line-height: 1.7; }
-        .prose ul { list-style-type: disc; padding-left: 1.2rem; margin-bottom: 0.8em; }
-        
-        .hl-buy { background-color: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #BBF7D0; }
-        .hl-sell { background-color: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #FECACA; }
-        .hl-wait { background-color: #FEF3C7; color: #92400E; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #FDE68A; }
-
-        /* --- Chat --- */
-        .chat-container { overflow-y: auto; scroll-behavior: smooth; }
-        .chat-bubble { max-width: 90%; padding: 12px 16px; border-radius: 16px; margin-bottom: 12px; font-size: 0.95rem; line-height: 1.6; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .user-bubble { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; margin-left: auto; border-bottom-right-radius: 2px; }
-        .ai-bubble { background-color: #FFFFFF; margin-right: auto; border: 1px solid #E2E8F0; border-bottom-left-radius: 2px; color: #334155; }
-        
-        /* --- Toast --- */
-        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-left: 4px solid #10B981; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); font-size: 0.9rem; font-weight: 500; color: #334155; transform: translateX(120%); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto; display: flex; align-items: center; gap: 10px; }
-        .toast.show { transform: translateX(0); }
-        
-        iframe { border: none !important; }
-        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
     </style>
 </head>
-<body class="h-screen flex flex-col bg-slate-50">
+<body class="text-slate-800">
 
-    <!-- 1. 頂部導航列 -->
-    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm flex-shrink-0 h-14">
-        <div class="w-full h-full px-4 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md ring-1 ring-slate-100">MA</div>
-                <h1 class="text-base font-bold text-slate-800 tracking-tight">智能操盤室 <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 ml-1 align-middle">PRO</span></h1>
+    <!-- Header -->
+    <header class="bg-teal-600 text-white pt-12 pb-6 px-6 shadow-lg rounded-b-[2rem] mb-6 relative overflow-hidden">
+        <div class="absolute -top-6 -right-6 w-40 h-40 bg-white opacity-5 rounded-full pointer-events-none"></div>
+        <div class="relative z-10 flex justify-between items-end max-w-3xl mx-auto">
+            <div>
+                <h1 class="text-2xl font-bold tracking-wide">曼谷家庭之旅</h1>
+                <p class="text-teal-100 text-sm mt-1 flex items-center">
+                    <i class="fa-regular fa-calendar-check mr-1.5"></i>2026/01/21 - 01/25
+                </p>
             </div>
-            
-            <div class="flex items-center gap-2">
-                <button onclick="AppState.toggleSettings()" class="md:hidden p-2 text-gray-500 hover:text-emerald-600 transition bg-gray-50 rounded-lg">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </button>
-
-                <div class="hidden md:flex items-center gap-2">
-                    <div class="flex items-center bg-white px-3 py-1 rounded-lg border border-gray-300 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100 transition-all shadow-sm">
-                        <span class="text-[10px] font-bold text-emerald-600 uppercase mr-2">Key</span>
-                        <input type="password" id="api-key-input" placeholder="Google API Key" class="bg-transparent text-xs outline-none w-32 lg:w-48 text-gray-700" onchange="AppState.saveSettings()">
-                    </div>
-                </div>
+            <div class="flex gap-2">
+                <a href="https://www.starlux-airlines.com/flight-status" target="_blank" class="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition flex items-center shadow-sm border border-white/10">
+                    <i class="fa-solid fa-plane-up mr-1.5"></i>航班
+                </a>
+                <a href="https://www.accuweather.com/zh/th/bangkok/318849/weather-forecast/318849" target="_blank" class="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition flex items-center shadow-sm border border-white/10">
+                    <i class="fa-solid fa-cloud-sun mr-1.5"></i>天氣
+                </a>
             </div>
         </div>
     </header>
 
-    <!-- 2. 主工作區 -->
-    <main class="flex-grow flex flex-col lg:flex-row overflow-hidden bg-white">
-        
-        <!-- 左側: TradingView 圖表 (70%) -->
-        <div id="panel-chart" class="flex-grow lg:w-[70%] flex flex-col border-r border-gray-200 bg-white relative group">
-            
-            <!-- 圖表工具列 -->
-            <div class="px-4 py-2 border-b border-gray-200 flex items-center justify-between bg-white flex-shrink-0 z-20 shadow-sm h-14">
-                <div class="flex items-center gap-3 w-full overflow-x-auto no-scrollbar">
-                    
-                    <!-- 搜尋框 -->
-                    <div class="flex shadow-sm rounded-lg transition-shadow focus-within:shadow-md flex-shrink-0">
-                        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-slate-50 text-gray-500 text-xs font-bold font-mono">$</span>
-                        <input type="text" id="stock-symbol" class="w-20 p-1.5 border border-gray-300 focus:ring-0 focus:border-emerald-500 outline-none uppercase text-sm font-bold text-center tracking-wide font-mono text-slate-700" placeholder="AAPL" onkeydown="if(event.key === 'Enter') AppState.updateTradingView()">
-                        <button onclick="AppState.updateTradingView()" class="px-3 bg-slate-800 text-white font-bold rounded-r-lg hover:bg-slate-700 text-xs transition tracking-wide active:bg-slate-900">GO</button>
-                    </div>
-                    
-                    <!-- 快速選股 Chips -->
-                    <div id="quick-chips-container" class="flex items-center">
-                        <!-- JS 插入 Chips -->
-                    </div>
-                    
-                    <!-- 新增按鈕 -->
-                    <button onclick="AppState.addQuickChip()" class="w-7 h-7 rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-emerald-600 hover:border-emerald-500 hover:bg-emerald-50 flex items-center justify-center transition flex-shrink-0" title="新增自選股">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    </button>
+    <!-- Main Content -->
+    <main class="max-w-3xl mx-auto px-4 pb-20">
 
-                    <!-- 截圖按鈕 -->
-                    <button onclick="AppState.triggerPasteMode()" class="hidden lg:flex ml-auto px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 text-xs items-center gap-1.5 shadow-md hover:shadow-lg transition transform active:scale-95 whitespace-nowrap">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        截圖分析
-                    </button>
+        <!-- 1. 總覽 TAB -->
+        <div id="overview" class="tab-content active">
+            <!-- 航班卡片 -->
+            <div class="flight-card-bg rounded-2xl shadow-xl p-5 text-white mb-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-orange-500 text-xs font-bold px-3 py-1 rounded-bl-lg shadow-sm">星宇航空</div>
+                
+                <!-- 去程 -->
+                <div class="flex justify-between items-center mb-6 mt-2">
+                    <div class="text-left">
+                        <div class="text-3xl font-bold text-teal-300">09:25</div>
+                        <div class="text-[10px] text-slate-300 bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">TPE 桃園</div>
+                    </div>
+                    <div class="flex flex-col items-center px-4 flex-grow">
+                        <span class="text-[10px] text-slate-400 mb-1">1/21 (三)</span>
+                        <div class="w-full h-[1px] bg-slate-600 relative flex items-center justify-center">
+                            <i class="fa-solid fa-plane text-slate-500 text-xs bg-[#1e293b] px-1"></i>
+                        </div>
+                        <span class="text-xs text-teal-500 font-bold mt-1">JX741</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-teal-300">12:35</div>
+                        <div class="text-[10px] text-slate-300 bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">BKK 曼谷</div>
+                    </div>
+                </div>
+
+                <!-- 回程 -->
+                <div class="flex justify-between items-center">
+                    <div class="text-left">
+                        <div class="text-3xl font-bold text-orange-300">17:40</div>
+                        <div class="text-[10px] text-slate-300 bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">BKK 曼谷</div>
+                    </div>
+                    <div class="flex flex-col items-center px-4 flex-grow">
+                        <span class="text-[10px] text-slate-400 mb-1">1/25 (日)</span>
+                        <div class="w-full h-[1px] bg-slate-600 relative flex items-center justify-center">
+                            <i class="fa-solid fa-plane fa-rotate-180 text-slate-500 text-xs bg-[#1e293b] px-1"></i>
+                        </div>
+                        <span class="text-xs text-orange-400 font-bold mt-1">JX746</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold text-orange-300">22:30</div>
+                        <div class="text-[10px] text-slate-300 bg-white/10 px-2 py-0.5 rounded-full inline-block mt-1">TPE 桃園</div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- TradingView 容器 -->
-            <div class="flex-grow relative bg-gray-50">
-                <div id="tradingview_widget" class="absolute inset-0 w-full h-full"></div>
-                
-                <!-- 策略提示條 (自動消失) -->
-                <div class="tv-hint absolute top-3 left-3 bg-slate-900/90 text-white px-3 py-2 rounded-lg backdrop-blur-sm shadow-lg border border-slate-700 pointer-events-none z-10 flex items-center gap-3 animate-pulse">
-                    <div class="text-[10px] leading-tight">
-                        <span class="font-bold text-emerald-400">MA 策略已載入</span>
-                        <span class="block text-slate-300 mt-0.5">系統自動掛載 MA 20, 50, 200</span>
+
+            <!-- 住宿資訊 -->
+            <div class="app-card flex justify-between items-center mb-6">
+                <div class="flex items-center">
+                    <div class="icon-box bg-indigo-50 text-indigo-600 mr-4">
+                        <i class="fa-solid fa-bed"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-bold mb-0.5">入住飯店</div>
+                        <div class="font-bold text-slate-800 text-lg">Hotel Clover Asoke</div>
                     </div>
                 </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=Hotel+Clover+Asoke" target="_blank" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:bg-teal-500 hover:text-white transition">
+                    <i class="fa-solid fa-location-arrow"></i>
+                </a>
+            </div>
 
-                <!-- 貼上提示遮罩 -->
-                <div id="paste-overlay" class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex-col items-center justify-center cursor-pointer transition-all duration-300 opacity-0" onclick="AppState.triggerPasteMode()">
-                    <div class="bg-white p-8 rounded-3xl shadow-2xl border-2 border-dashed border-emerald-400 max-w-sm text-center transform scale-95 transition-transform duration-300">
-                        <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-emerald-50/50">
-                            <svg class="w-8 h-8 text-emerald-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+             <!-- 功能捷徑區 -->
+             <div class="grid grid-cols-2 gap-4 mb-8">
+                <button onclick="switchTab('massage')" class="app-card flex flex-col items-center justify-center py-5 hover:border-purple-200 transition group">
+                    <div class="icon-box bg-purple-100 text-purple-600 mb-2 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-hand-sparkles"></i>
+                    </div>
+                    <div class="font-bold text-slate-700">按摩推薦</div>
+                    <div class="text-[10px] text-slate-400">Asoke 周邊</div>
+                </button>
+                
+                <button onclick="switchTab('shopping')" class="app-card flex flex-col items-center justify-center py-5 hover:border-pink-200 transition group">
+                    <div class="icon-box bg-pink-100 text-pink-600 mb-2 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                    </div>
+                    <div class="font-bold text-slate-700">必買清單</div>
+                    <div class="text-[10px] text-slate-400">Big C 攻略</div>
+                </button>
+                
+                <button onclick="switchTab('prep')" class="app-card flex flex-col items-center justify-center py-5 hover:border-blue-200 transition group">
+                    <div class="icon-box bg-blue-100 text-blue-600 mb-2 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-passport"></i>
+                    </div>
+                    <div class="font-bold text-slate-700">行前須知</div>
+                    <div class="text-[10px] text-slate-400">簽證與網卡</div>
+                </button>
+                
+                <button onclick="switchTab('transport')" class="app-card flex flex-col items-center justify-center py-5 hover:border-green-200 transition group">
+                    <div class="icon-box bg-green-100 text-green-600 mb-2 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-train-subway"></i>
+                    </div>
+                    <div class="font-bold text-slate-700">交通攻略</div>
+                    <div class="text-[10px] text-slate-400">BTS/Grab</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. 行程 TAB -->
+        <div id="itinerary" class="tab-content">
+            <div class="sticky top-0 bg-[#f8fafc]/95 backdrop-blur-md pt-2 pb-4 z-30 overflow-x-auto hide-scrollbar flex gap-2 px-1">
+                <button onclick="switchDay(1)" id="day-btn-1" class="day-btn active flex-shrink-0">Day 1</button>
+                <button onclick="switchDay(2)" id="day-btn-2" class="day-btn inactive flex-shrink-0">Day 2</button>
+                <button onclick="switchDay(3)" id="day-btn-3" class="day-btn inactive flex-shrink-0">Day 3</button>
+                <button onclick="switchDay(4)" id="day-btn-4" class="day-btn inactive flex-shrink-0">Day 4</button>
+                <button onclick="switchDay(5)" id="day-btn-5" class="day-btn inactive flex-shrink-0">Day 5</button>
+            </div>
+            <div id="timeline-container" class="relative pl-2 pb-4 space-y-4"></div>
+        </div>
+
+        <!-- 3. 文化 TAB -->
+        <div id="culture" class="tab-content">
+            <h2 class="section-title border-teal-500">歷史文化巡禮</h2>
+            <div class="space-y-4">
+                <!-- 四面佛 -->
+                <div class="app-card p-0">
+                     <div class="h-32 bg-yellow-50 flex items-center justify-center relative overflow-hidden">
+                        <i class="fa-solid fa-hands-praying text-yellow-300 text-7xl opacity-40 absolute -bottom-2 -right-2"></i>
+                        <div class="text-center relative z-10 p-4">
+                             <h3 class="font-bold text-xl text-yellow-900 mb-0.5">四面佛</h3>
+                             <p class="text-[10px] text-yellow-800 font-bold bg-white/60 px-2 py-0.5 rounded-full inline-block">Erawan Shrine</p>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">請按下 Ctrl + V</h3>
-                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">
-                            系統已準備好。<br>請直接貼上您剛才的截圖。
+                    </div>
+                    <div class="p-5">
+                        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                            位於市中心 Chit Lom，曼谷香火最鼎盛的寺廟。
                         </p>
-                        <button onclick="AppState.closePasteOverlay(event)" class="text-slate-400 hover:text-slate-600 text-xs underline transition">取消操作</button>
+                        <div class="bg-yellow-50/70 p-3 rounded-xl border border-yellow-100">
+                             <h4 class="font-bold text-yellow-800 text-xs mb-2 text-center border-b border-yellow-200 pb-2">順時針參拜指南</h4>
+                             <div class="grid grid-cols-2 gap-2 text-xs">
+                                 <div class="text-center p-1.5 bg-white rounded shadow-sm"><span class="font-bold text-slate-800 block">1. 正面</span><span class="text-slate-500">事業/學業</span></div>
+                                 <div class="text-center p-1.5 bg-white rounded shadow-sm"><span class="font-bold text-slate-800 block">2. 左側</span><span class="text-slate-500">愛情/婚姻</span></div>
+                                 <div class="text-center p-1.5 bg-white rounded shadow-sm"><span class="font-bold text-slate-800 block">3. 後方</span><span class="text-slate-500">財富/正財</span></div>
+                                 <div class="text-center p-1.5 bg-white rounded shadow-sm"><span class="font-bold text-slate-800 block">4. 右側</span><span class="text-slate-500">健康/平安</span></div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美功鐵道 -->
+                <div class="app-card p-0">
+                    <div class="h-32 bg-blue-50 flex items-center justify-center relative overflow-hidden">
+                        <i class="fa-solid fa-train text-blue-200 text-7xl opacity-40 absolute -bottom-2 -right-2"></i>
+                        <div class="text-center relative z-10 p-4">
+                             <h3 class="font-bold text-xl text-blue-900 mb-0.5">美功鐵道市場</h3>
+                             <p class="text-[10px] text-blue-700 font-bold bg-white/60 px-2 py-0.5 rounded-full inline-block">Maeklong Railway</p>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+                            世界罕見的「火車穿過菜市場」奇景。火車經過時攤販會瞬間收棚，非常震撼。
+                        </p>
+                         <div class="flex items-center text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100">
+                            <i class="fa-regular fa-clock mr-2 text-blue-500"></i>
+                            <span>火車時刻參考：08:30, 11:10, 14:30, 17:40</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 鄭王廟 -->
+                <div class="app-card p-0">
+                    <div class="h-32 bg-orange-50 flex items-center justify-center relative overflow-hidden">
+                        <i class="fa-solid fa-gopuram text-orange-200 text-7xl opacity-40 absolute -bottom-2 -right-2"></i>
+                        <div class="text-center relative z-10 p-4">
+                             <h3 class="font-bold text-xl text-orange-900 mb-0.5">鄭王廟 (黎明寺)</h3>
+                             <p class="text-[10px] text-orange-800 font-bold bg-white/60 px-2 py-0.5 rounded-full inline-block">Wat Arun</p>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+                            昭披耶河畔最美的白色佛塔，表面鑲嵌無數彩色陶瓷，被譽為「泰國艾菲爾鐵塔」。
+                        </p>
+                        <a href="https://zh.wikipedia.org/wiki/鄭王廟" target="_blank" class="block w-full bg-orange-50 text-orange-600 py-2 rounded-lg text-center text-xs font-bold hover:bg-orange-100 transition border border-orange-100">
+                            <i class="fa-brands fa-wikipedia-w mr-1"></i> 維基百科介紹
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 大城 -->
+                <div class="app-card p-0">
+                     <div class="h-32 bg-stone-100 flex items-center justify-center relative overflow-hidden">
+                        <i class="fa-solid fa-archway text-stone-300 text-7xl opacity-40 absolute -bottom-2 -right-2"></i>
+                        <div class="text-center relative z-10 p-4">
+                             <h3 class="font-bold text-xl text-stone-800 mb-0.5">大城古都</h3>
+                             <p class="text-[10px] text-stone-600 font-bold bg-white/60 px-2 py-0.5 rounded-full inline-block">Ayutthaya</p>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+                            泰國舊首都，世界文化遺產。必看瑪哈泰寺的「樹中佛頭」，見證歷史的興衰。
+                        </p>
+                        <a href="https://zh.wikipedia.org/wiki/阿瑜陀耶古城" target="_blank" class="block w-full bg-stone-200 text-stone-700 py-2 rounded-lg text-center text-xs font-bold hover:bg-stone-300 transition border border-stone-200">
+                            <i class="fa-brands fa-wikipedia-w mr-1"></i> 維基百科介紹
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 右側: AI 助理 (30%) -->
-        <div id="panel-ai" class="hidden lg:flex lg:w-[30%] flex-col bg-white h-full overflow-hidden shadow-[-4px_0_25px_rgba(0,0,0,0.03)] z-30">
+        <!-- 4. 美食 TAB -->
+        <div id="food-map" class="tab-content">
+            <!-- Copper Highlight -->
+            <div onclick="document.getElementById('copper-modal').classList.remove('hidden')" class="app-card bg-gradient-to-br from-red-50 to-white p-5 mb-8 cursor-pointer relative group border-l-4 border-red-500 shadow-lg">
+                <div class="absolute right-4 top-4 bg-red-100 text-red-600 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">Day 3 必吃</div>
+                <div class="flex items-center">
+                    <div class="icon-box bg-red-100 text-red-500 mr-4 shadow-sm border border-red-50 w-16 h-16 text-2xl">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl text-slate-800">Copper Beyond Buffet</h3>
+                        <p class="text-xs text-slate-500 mt-1 flex items-center group-hover:text-red-500 transition">
+                            點擊查看攻略與訂位 <i class="fa-solid fa-arrow-right text-[10px] ml-1 opacity-70"></i>
+                        </p>
+                    </div>
+                </div>
+            </div>
             
-            <!-- 分頁切換 -->
-            <div class="flex border-b border-gray-200 bg-white flex-shrink-0">
-                <button onclick="AppState.switchRightTab('analysis')" id="btn-right-analysis" class="flex-1 py-3 text-sm font-bold text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/30 transition-all flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    分析報告
-                </button>
-                <button onclick="AppState.switchRightTab('chat')" id="btn-right-chat" class="flex-1 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                    策略問答
-                </button>
+            <!-- Jodd Fairs Highlight -->
+            <h3 class="section-title border-pink-500">喬德夜市必吃 (Jodd Fairs)</h3>
+            <div id="jodd-food-list" class="space-y-3 mb-8"></div>
+
+            <!-- Mall Food -->
+            <h3 class="section-title border-purple-500">百貨商場 & 美食街</h3>
+            <div id="mall-food-list" class="space-y-3 mb-8"></div>
+
+            <!-- Michelin -->
+            <h3 class="section-title border-orange-500">經典米其林餐廳</h3>
+            <div id="michelin-list" class="space-y-3 mb-8"></div>
+
+            <!-- Street Food -->
+            <h3 class="section-title border-yellow-500">泰式小吃 / 甜點</h3>
+            <div id="street-food-list" class="space-y-3"></div>
+        </div>
+
+        <!-- 5. 購物 TAB -->
+        <div id="shopping" class="tab-content">
+            <!-- Chatuchak Section -->
+            <div class="flex justify-between items-center mb-4 px-1">
+                <h2 class="section-title border-orange-500 mb-0">恰途洽週末市集</h2>
+                <span class="text-[10px] bg-orange-50 text-orange-600 px-2 py-1 rounded-full font-bold border border-orange-100">Day 5 行程</span>
+            </div>
+            
+            <div class="app-card mb-8 p-0 overflow-hidden">
+                 <div class="bg-orange-50 p-4 border-b border-orange-100">
+                    <h3 class="font-bold text-orange-800 flex items-center"><i class="fa-solid fa-map-signs mr-2"></i>逛街攻略</h3>
+                </div>
+                <div class="p-4 text-sm text-slate-600 space-y-3">
+                    <p><i class="fa-solid fa-clock text-orange-400 mr-2"></i><strong>時間：</strong>週六/日 09:00 - 18:00 (建議早上前往避暑)</p>
+                    <p><i class="fa-solid fa-shirt text-orange-400 mr-2"></i><strong>穿著：</strong>極熱！短袖短褲，善用防曬。</p>
+                    <p><i class="fa-solid fa-money-bill-wave text-orange-400 mr-2"></i><strong>殺價：</strong>從 7-8 折開始喊價。</p>
+                </div>
+                <div class="bg-slate-50 p-4 border-t border-slate-100">
+                    <div class="font-bold text-slate-700 mb-3 text-xs uppercase tracking-wide">推薦入手</div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tag tag-orange">香氛精油</span>
+                        <span class="tag tag-orange">木製餐具</span>
+                        <span class="tag tag-orange">編織包</span>
+                        <span class="tag tag-orange">泰式古著</span>
+                        <span class="tag tag-orange">椰子冰淇淋</span>
+                        <span class="tag tag-orange">蒜香麵包</span>
+                        <span class="tag tag-orange">西班牙燉飯</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- 內容區 -->
-            <div class="flex-grow relative overflow-hidden bg-white">
-                
-                <!-- 頁面 A: 分析報告 -->
-                <div id="view-analysis" class="absolute inset-0 flex flex-col h-full transition-opacity duration-300">
-                    <!-- 上傳區 -->
-                    <div class="p-3 bg-white border-b border-gray-100 flex-shrink-0 shadow-sm z-10">
-                        <div class="upload-zone rounded-xl p-2 flex flex-col items-center justify-center cursor-pointer relative group h-24" id="drop-area">
-                            <input type="file" id="fileElem" accept="image/*" class="hidden" onchange="AppState.handleFiles(this.files)">
-                            
-                            <div id="upload-prompt" class="text-center transition-opacity duration-200">
-                                <p class="text-slate-500 text-xs font-bold mb-1 group-hover:text-emerald-600 transition">點擊上傳 或 Ctrl+V 貼上</p>
-                                <span class="bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-mono border border-slate-200">JPG/PNG</span>
-                            </div>
-                            
-                            <img id="preview-img" class="absolute inset-0 w-full h-full object-cover rounded-lg opacity-0 transition-opacity duration-300" alt="Preview">
-                            
-                            <!-- 重新分析按鈕 -->
-                            <div id="analyze-overlay" class="absolute inset-0 bg-black/40 hidden items-center justify-center rounded-lg transition-opacity backdrop-blur-[1px]">
-                                 <button onclick="AppState.analyzeWithGemini()" class="px-4 py-1.5 bg-white text-emerald-600 text-xs rounded-full shadow-xl font-bold hover:bg-emerald-50 transform hover:scale-105 transition flex items-center gap-1.5 active:scale-95">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                    重新分析
-                                </button>
-                            </div>
-                        </div>
-                        <div id="error-msg-vision" class="text-rose-500 text-[10px] mt-2 hidden text-center font-bold bg-rose-50 py-1.5 rounded-lg border border-rose-100 flex items-center justify-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <span></span>
-                        </div>
-                    </div>
+            <!-- Big C Section -->
+            <div class="flex justify-between items-center mb-4 px-1">
+                <h2 class="section-title border-teal-500 mb-0">Big C 必買清單</h2>
+                <span class="text-[10px] bg-teal-50 text-teal-600 px-2 py-1 rounded-full font-bold">15項精選</span>
+            </div>
+            
+            <div class="bg-teal-50 p-3 rounded-lg mb-4 text-xs text-teal-800 flex items-start border border-teal-100 mx-1">
+                <i class="fa-solid fa-circle-info mr-2 mt-0.5"></i>
+                <div>點擊商品卡片可查看<strong>Google 圖片搜尋</strong>結果。</div>
+            </div>
 
-                    <!-- 報告內容區 -->
-                    <div class="flex-grow overflow-y-auto p-5 custom-scrollbar bg-slate-50/50">
-                        <div id="loading-spinner-vision" class="hidden flex-col items-center justify-center pt-20">
-                            <div class="relative w-12 h-12 mb-4">
-                                <div class="absolute top-0 left-0 w-full h-full border-4 border-emerald-100 rounded-full"></div>
-                                <div class="absolute top-0 left-0 w-full h-full border-4 border-emerald-500 rounded-full animate-spin border-t-transparent"></div>
-                            </div>
-                            <p class="text-slate-600 text-xs font-bold tracking-wide animate-pulse">AI 正在深度解析 K 線結構...</p>
-                        </div>
+            <div id="shopping-grid" class="grid grid-cols-3 gap-3 mb-8">
+                <!-- Injected by JS -->
+            </div>
 
-                        <!-- Markdown Result -->
-                        <div id="ai-content-vision" class="prose prose-sm max-w-none hidden pb-20"></div>
-
-                        <!-- Empty State -->
-                        <div id="empty-state-vision" class="flex flex-col items-center justify-center h-full text-slate-300 pb-10 select-none">
-                            <div class="bg-white p-4 rounded-2xl mb-3 shadow-soft border border-slate-100">
-                                <svg class="w-8 h-8 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                            </div>
-                            <p class="text-xs font-medium text-slate-400">上傳截圖以獲取 MA 策略報告</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 頁面 B: 策略問答 -->
-                <div id="view-chat" class="hidden absolute inset-0 flex flex-col h-full bg-white transition-opacity duration-300">
-                    <div id="chat-context-bar" class="hidden bg-emerald-50 px-4 py-2 border-b border-emerald-100 flex-shrink-0 flex justify-between items-center shadow-sm z-10">
-                        <div class="text-[10px] text-emerald-800 font-bold flex items-center gap-2">
-                            <span class="relative flex h-2 w-2">
-                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                            已載入 <span id="context-symbol" class="font-mono bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-700">--</span> 分析數據
-                        </div>
-                        <button onclick="AppState.clearContext()" class="text-[10px] text-emerald-600 hover:text-emerald-800 font-medium hover:underline transition">清除記憶</button>
-                    </div>
-
-                    <div id="chat-log" class="chat-container flex-grow p-4 bg-slate-50 custom-scrollbar"></div>
-
-                    <div class="p-3 bg-white border-t border-gray-200 flex-shrink-0 safe-pb">
-                        <div class="flex gap-2 relative items-end">
-                            <textarea id="chat-input" rows="1" placeholder="輸入問題..." class="flex-grow p-3 pl-4 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-gray-50 focus:bg-white transition-all shadow-soft resize-none" style="min-height: 44px; max-height: 100px;" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); AppState.sendChatMessage(); }"></textarea>
-                            <button onclick="AppState.sendChatMessage()" id="chat-send-btn" class="h-11 px-4 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                            </button>
-                        </div>
-                        <div id="error-msg-chat" class="text-rose-500 text-[10px] mt-2 hidden text-center"></div>
-                    </div>
-                </div>
-
+            <h2 class="section-title border-pink-500">曼谷推薦伴手禮</h2>
+            <div id="bangkok-gift-grid" class="grid grid-cols-2 gap-3">
+                <!-- Injected by JS -->
             </div>
         </div>
+
+        <!-- 6. 按摩 TAB -->
+        <div id="massage" class="tab-content">
+             <div class="bg-indigo-600 text-white p-6 rounded-2xl mb-8 shadow-lg relative overflow-hidden">
+                 <div class="absolute right-0 bottom-0 text-9xl opacity-10 -mb-4 -mr-4"><i class="fa-solid fa-spa"></i></div>
+                 <h2 class="text-2xl font-bold mb-2">Asoke 按摩地圖</h2>
+                 <p class="text-indigo-100 text-sm">精選飯店周邊高評價店家，建議提前預約。</p>
+             </div>
+             <div id="massage-list" class="space-y-4">
+                 <!-- Injected by JS -->
+             </div>
+        </div>
+
+        <!-- 7. 交通 TAB -->
+        <div id="transport" class="tab-content">
+            <h2 class="section-title border-blue-500">交通攻略</h2>
+            
+            <!-- 叫車 APP 攻略 -->
+            <div class="app-card mb-6 p-0 overflow-hidden border-2 border-yellow-400">
+                <div class="bg-yellow-400 p-3 text-center">
+                    <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-mobile-screen-button mr-2"></i>必備叫車 App 指南</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                    <!-- Grab -->
+                    <div class="flex items-start">
+                         <a href="https://www.grab.com/th/en/download/" target="_blank" class="w-12 h-12 bg-white rounded-xl flex items-center justify-center mr-4 flex-shrink-0 shadow-sm border border-slate-200 p-1">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="Grab" class="w-full h-full object-contain">
+                        </a>
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-800">Grab</h4>
+                            <p class="text-sm text-slate-600 mb-1">最主流、車輛多、可綁信用卡。</p>
+                            <span class="tag tag-blue">推薦使用</span>
+                        </div>
+                    </div>
+                    <hr class="border-slate-100">
+                    <!-- Bolt -->
+                    <div class="flex items-start">
+                         <a href="https://bolt.eu/" target="_blank" class="w-12 h-12 bg-white rounded-xl flex items-center justify-center mr-4 flex-shrink-0 shadow-sm border border-slate-200 p-1">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Bolt_logo.svg/512px-Bolt_logo.svg.png" alt="Bolt" class="w-full h-full object-contain">
+                        </a>
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-800">Bolt</h4>
+                            <p class="text-sm text-slate-600 mb-1">價格通常較便宜，但車輛較少，多收現金。</p>
+                            <span class="tag tag-orange">省錢首選</span>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded-lg text-xs text-slate-600 mt-2">
+                        <strong>💡 小撇步：</strong> 尖峰時段 (07-09, 17-19) 塞車嚴重，建議改搭 BTS/MRT。
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Boat -->
+                <div class="app-card flex gap-4 items-start border-l-4 border-cyan-500">
+                    <div class="icon-box bg-cyan-50 text-cyan-600">
+                        <i class="fa-solid fa-ferry"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">昭披耶河遊船</h3>
+                        <p class="text-sm text-slate-600 mt-1">前往鄭王廟、大皇宮、Iconsiam 必搭。</p>
+                        <div class="mt-2 text-xs bg-slate-50 p-2 rounded text-slate-500 border border-slate-100">
+                            <strong>Tips:</strong> 橘旗船(便宜/班次多)，藍旗船(觀光/有導覽)。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BTS -->
+                <div class="app-card flex gap-4 items-start border-l-4 border-green-500">
+                    <div class="icon-box bg-green-50 text-green-600">
+                        <i class="fa-solid fa-train"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">BTS 空鐵</h3>
+                        <p class="text-sm text-slate-600 mt-1">曼谷移動首選，不塞車。</p>
+                        <div class="mt-2 text-xs bg-slate-50 p-2 rounded text-slate-500 border border-slate-100">
+                            <strong>Tips:</strong> 建議購買 Rabbit Card (兔子卡) 避開購票人潮。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MRT -->
+                <div class="app-card flex gap-4 items-start border-l-4 border-blue-500">
+                    <div class="icon-box bg-blue-50 text-blue-600">
+                        <i class="fa-solid fa-subway"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">MRT 地鐵</h3>
+                        <p class="text-sm text-slate-600 mt-1">連結舊城區、夜市方便。</p>
+                        <div class="mt-2 text-xs bg-slate-50 p-2 rounded text-slate-500 border border-slate-100">
+                            <strong>Tips:</strong> 可直接刷 VISA / MasterCard 進站，免購票。
+                        </div>
+                    </div>
+                </div>
+                
+                 <!-- Tuk Tuk -->
+                <div class="app-card flex gap-4 items-start border-l-4 border-orange-500">
+                    <div class="icon-box bg-orange-50 text-orange-600">
+                        <i class="fa-solid fa-motorcycle"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">都都車 (Tuk Tuk)</h3>
+                        <p class="text-sm text-slate-600 mt-1">體驗在地風情，適合短程。</p>
+                        <div class="mt-2 text-xs bg-slate-50 p-2 rounded text-slate-500 border border-slate-100">
+                            <strong>Tips:</strong> 沒有跳表，上車前務必先議價！
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 8. 行前須知 TAB -->
+        <div id="prep" class="tab-content">
+            <h2 class="section-title border-indigo-500">行前準備</h2>
+            <div class="space-y-4">
+                <div class="app-card">
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center"><i class="fa-solid fa-passport mr-2 text-indigo-500"></i>入境與簽證</h3>
+                    <ul class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                         <li>台灣護照可免簽證入境泰國 (停留60天)。</li>
+                         <li>護照效期需有 6 個月以上。</li>
+                    </ul>
+                </div>
+                <div class="app-card">
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center"><i class="fa-solid fa-plug mr-2 text-indigo-500"></i>電壓與插座</h3>
+                    <p class="text-sm text-slate-600">泰國電壓為 220V。插座通常為雙孔圓形或扁形，台灣電器通常可直接使用（需確認電壓支援）。</p>
+                </div>
+                 <div class="app-card">
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center"><i class="fa-solid fa-money-bill-1-wave mr-2 text-indigo-500"></i>小費文化</h3>
+                    <p class="text-sm text-slate-600">建議給予小費，如床頭費 (20-50泰銖)、按摩師 (50-100泰銖)。</p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <!-- 3. 底部導航 (Mobile Only) -->
-    <nav class="bg-white/90 backdrop-blur-md border-t border-gray-200 flex lg:hidden justify-around items-center h-16 safe-pb flex-shrink-0 z-50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
-        <button onclick="AppState.switchMobileView('chart')" id="mob-btn-chart" class="flex flex-col items-center justify-center w-full h-full text-emerald-600 transition-colors">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
-            <span class="text-[10px] font-bold">K 線圖</span>
-        </button>
-        <button onclick="AppState.switchMobileView('ai')" id="mob-btn-ai" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-600 transition-colors">
-            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            <span class="text-[10px] font-medium">AI 助理</span>
-        </button>
-    </nav>
-
-    <!-- Settings Modal (Mobile) -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-xs rounded-2xl shadow-2xl p-6 transform transition-all scale-100">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">系統設定</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">API Key</label>
-                    <input type="password" id="mob-api-key" placeholder="貼上 Key" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-base">
+    <!-- Copper Modal -->
+    <div id="copper-modal" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="this.classList.add('hidden')">
+        <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl transform transition-all" onclick="event.stopPropagation()">
+            <div class="bg-gradient-to-r from-red-500 to-red-600 p-4 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg"><i class="fa-solid fa-crown mr-2"></i>Copper Buffet 攻略</h3>
+                <button onclick="document.getElementById('copper-modal').classList.add('hidden')" class="hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fa-solid fa-times text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+                <div class="text-sm text-slate-600">
+                    <p class="mb-3 flex items-center"><i class="fa-solid fa-location-dot text-red-500 w-6 text-center mr-2"></i><span>Gaysorn Amarin (BTS Chit Lom)</span></p>
+                    <div class="mb-4 text-red-700 font-bold text-xs bg-red-50 p-3 rounded-lg border border-red-100 flex items-start">
+                        <i class="fa-solid fa-circle-exclamation mr-2 mt-0.5"></i>
+                        全預約制，建議提前1個月訂位！
+                    </div>
+                    
+                    <h4 class="font-bold text-slate-800 mb-2 border-b pb-1">必吃推薦</h4>
+                    <ul class="space-y-2 pl-1">
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-red-400 rounded-full mr-2"></span> <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-bold mr-1">招牌</span> 松露湯 (Truffle Soup)</li>
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-slate-300 rounded-full mr-2"></span> 澳洲和牛船麵</li>
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-slate-300 rounded-full mr-2"></span> 生蠔 / 泰式海鮮</li>
+                        <li class="flex items-center"><span class="w-1.5 h-1.5 bg-slate-300 rounded-full mr-2"></span> 法式鵝肝醬</li>
+                    </ul>
+                </div>
+                <div class="flex gap-3 pt-2 flex-col sm:flex-row">
+                    <a href="https://www.hungryhub.com/en/restaurants/copper-buffet" target="_blank" class="w-full bg-red-600 text-white py-3 rounded-xl text-center text-sm font-bold shadow-md hover:bg-red-700 transition flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-check mr-2"></i>前往 Hungry Hub 訂位
+                    </a>
+                    
+                    <div class="flex gap-2 w-full">
+                        <a href="https://foodieteller.com/copper-beyond-buffet/" target="_blank" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl text-center text-sm font-bold border border-slate-200 hover:bg-slate-200 transition">
+                            <i class="fa-regular fa-file-lines mr-1"></i>看攻略
+                        </a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Copper+Beyond+Buffet+Gaysorn+Amarin" target="_blank" class="flex-1 bg-blue-600 text-white py-3 rounded-xl text-center text-sm font-bold shadow-md hover:bg-blue-700 transition">
+                            <i class="fa-solid fa-location-dot mr-1"></i>導航
+                        </a>
+                    </div>
                 </div>
             </div>
-            <button onclick="AppState.saveMobileSettings()" class="w-full mt-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 active:scale-95 transition shadow-lg">儲存設定</button>
         </div>
     </div>
 
-    <div id="toast-container"></div>
+    <!-- AI FAB Button (New) -->
+    <button onclick="document.getElementById('ai-modal').classList.remove('hidden')" class="ai-fab shadow-lg hover:scale-110 transition-transform">
+        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+    </button>
+
+    <!-- AI Modal -->
+    <div id="ai-modal" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl h-[80vh] flex flex-col relative" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-violet-600 to-indigo-600 p-4 flex justify-between items-center text-white flex-shrink-0">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-robot mr-2"></i>
+                    <h3 class="font-bold text-lg">AI 隨身導遊</h3>
+                </div>
+                <button onclick="document.getElementById('ai-modal').classList.add('hidden')" class="hover:bg-white/20 rounded-full w-8 h-8 flex items-center justify-center transition">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-200 flex-shrink-0">
+                <button onclick="switchAiTab('chat')" id="ai-tab-chat" class="flex-1 py-3 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50">
+                    <i class="fa-regular fa-comments mr-1"></i> 旅遊問答
+                </button>
+                <button onclick="switchAiTab('translate')" id="ai-tab-translate" class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-language mr-1"></i> 泰語翻譯
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-grow overflow-y-auto p-4 bg-slate-50" id="ai-content-area">
+                
+                <!-- Chat View -->
+                <div id="ai-view-chat" class="space-y-4">
+                    <div class="chat-ai chat-bubble self-start">
+                        👋 薩瓦迪卡！我是您的曼谷 AI 導遊。<br>
+                        我可以幫您推薦附近美食、查詢景點資訊，或是解答任何旅遊疑問。請問今天想去哪裡呢？
+                    </div>
+                </div>
+
+                <!-- Translate View -->
+                <div id="ai-view-translate" class="hidden space-y-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-100">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">輸入中文句子：</label>
+                        <div class="relative">
+                            <input type="text" id="trans-input" class="w-full p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10" placeholder="例如：多少錢？/ 不要香菜">
+                            <button onclick="handleTranslate()" class="absolute right-2 top-2 bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-indigo-700 transition">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="trans-result" class="hidden space-y-3">
+                        <!-- Result will be injected here -->
+                    </div>
+                    
+                    <div class="text-center text-xs text-slate-400 mt-4">
+                        💡 輸入短句效果最佳
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Chat Input Area -->
+            <div id="ai-input-area" class="p-3 border-t border-slate-200 bg-white flex-shrink-0 flex gap-2">
+                <input type="text" id="chat-input" class="flex-grow p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="輸入問題..." onkeypress="if(event.key === 'Enter') handleChat()">
+                <button onclick="handleChat()" class="bg-indigo-600 text-white px-4 rounded-xl hover:bg-indigo-700 transition font-bold">
+                    送出
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Fixed) -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 pb-safe z-50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)]">
+        <div class="grid grid-cols-5 h-[4rem]">
+            <div onclick="switchTab('overview')" id="tab-overview" class="nav-item active flex flex-col items-center justify-center cursor-pointer">
+                <i class="fa-solid fa-house text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">總覽</span>
+            </div>
+            <div onclick="switchTab('itinerary')" id="tab-itinerary" class="nav-item flex flex-col items-center justify-center cursor-pointer text-slate-400">
+                <i class="fa-solid fa-calendar-days text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">行程</span>
+            </div>
+            <div onclick="switchTab('food-map')" id="tab-food-map" class="nav-item flex flex-col items-center justify-center cursor-pointer text-slate-400">
+                <i class="fa-solid fa-utensils text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">美食</span>
+            </div>
+            <div onclick="switchTab('shopping')" id="tab-shopping" class="nav-item flex flex-col items-center justify-center cursor-pointer text-slate-400">
+                <i class="fa-solid fa-bag-shopping text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">購物</span>
+            </div>
+            <div onclick="switchTab('culture')" id="tab-culture" class="nav-item flex flex-col items-center justify-center cursor-pointer text-slate-400">
+                <i class="fa-solid fa-archway text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">文化</span>
+            </div>
+        </div>
+    </nav>
 
     <script>
-        // ============================================
-        //  APP CONFIG & LOGIC
-        // ============================================
+        // --- API CONFIGURATION ---
+        const apiKey = ""; // API Key is provided by the environment
+
+        // --- Data Definitions (Moved to top to prevent scope issues) ---
         
-        const PRE_CONFIGURED_API_KEY = "";
+        // Jodd Fairs Food List
+        const joddFairsFood = [
+             { name: "火山排骨", note: "酸辣開胃，拍照必備", map: "https://www.google.com/maps/search/Jodd+Fairs+Volcano+Ribs" },
+             { name: "水果西施冰沙", note: "真材實料，解暑首選", map: "https://www.google.com/maps/search/Jodd+Fairs+Fruit+Smoothie" },
+             { name: "烤水母", note: "口感脆彈，配海鮮醬", map: "" },
+             { name: "跳跳蝦", note: "泰式生醃活蝦，敢吃辣必試", map: "" }
+        ];
 
-        const Toast = {
-            show: function(msg, type='success') {
-                const container = document.getElementById('toast-container');
-                const div = document.createElement('div');
-                div.className = 'toast';
-                
-                let icon = type === 'success' 
-                    ? '<svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' 
-                    : '<svg class="w-5 h-5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
-                
-                div.innerHTML = `${icon}<span>${msg}</span>`;
-                if(type === 'error') div.style.borderLeftColor = '#f43f5e';
-                
-                container.appendChild(div);
-                requestAnimationFrame(() => div.classList.add('show'));
-                setTimeout(() => { div.classList.remove('show'); setTimeout(()=>div.remove(), 300); }, 2500);
-            }
+        const itineraryData = {
+            1: [
+                { t: "09:25", title: "去程 JX741", desc: "TPE 桃園 -> BKK 曼谷", link: "https://www.starlux-airlines.com/", transport: "飛機" },
+                { t: "12:35", title: "抵達曼谷", desc: "入境檢查、領取行李。", icon: "fa-plane-arrival", transport: "步行" },
+                { t: "14:45", title: "市區換匯", desc: "前往 SuperRich (綠標) 總店/Chit Lom店。", map: "https://www.google.com/maps/search/SuperRich+Thailand", transport: "機場快線/Grab" },
+                { t: "15:30", title: "飯店 Check-in", desc: "Hotel Clover Asoke。", map: "https://www.google.com/maps/search/Hotel+Clover+Asoke", transport: "Grab/BTS" },
+                { t: "18:00", title: "晚餐：Pier 21", desc: "Terminal 21 美食街。<br>推薦：手標泰奶 (Cha Tra Mue)", map: "https://www.google.com/maps/search/Terminal+21+Asoke", transport: "步行" },
+                { t: "20:00", title: "按摩放鬆", desc: "前往 Asoke 周邊推薦按摩店 (詳見按摩頁)。", map: "https://www.google.com/maps/search/Massage+near+Asoke", transport: "步行" }
+            ],
+            2: [
+                { t: "08:00", title: "大城一日遊 (集合)", desc: "前往集合點 (Central World)。<br><a href='https://s.klook.com/c/my4l6MZ4wO' target='_blank' class='text-teal-600 underline font-bold'>Klook 行程連結</a>", map: "https://www.google.com/maps/search/Central+World", transport: "BTS/Grab" },
+                { t: "10:00", title: "大城古蹟巡禮", desc: "瑪哈泰寺、邦芭茵夏宮。", map: "https://www.google.com/maps/search/Ayutthaya+Historical+Park", transport: "包車" },
+                { t: "19:00", title: "下車：喬德夜市", desc: "行程結束於 Jodd Fairs 下車。", map: "https://www.google.com/maps/search/Jodd+Fairs", transport: "包車" },
+                { t: "19:30", title: "晚餐：喬德夜市", desc: "火山排骨、水果冰沙。", map: "https://www.google.com/maps/search/Jodd+Fairs", transport: "步行" },
+                { t: "21:30", title: "返回飯店", desc: "結束夜市行程，返回 Asoke。", transport: "MRT/Grab" }
+            ],
+            3: [
+                { t: "09:00", title: "參拜四面佛", desc: "BTS Chit Lom 站，心誠則靈。", map: "https://www.google.com/maps/search/Erawan+Shrine", transport: "BTS" },
+                { t: "10:30", title: "Copper Buffet", desc: "Gaysorn Amarin 分店。 (詳見攻略)", map: "https://www.google.com/maps/search/Copper+Beyond+Buffet+Gaysorn+Amarin", transport: "步行" },
+                { t: "14:30", title: "大皇宮 & 臥佛寺", desc: "曼谷經典寺廟群。", map: "https://www.google.com/maps/search/The+Grand+Palace", transport: "BTS+船" },
+                { t: "17:00", title: "鄭王廟", desc: "昭披耶河畔，欣賞夕陽美景。", map: "https://www.google.com/maps/search/Wat+Arun", transport: "渡輪" },
+                { t: "19:30", title: "Iconsiam 晚餐 & 遊船", desc: "逛室內水上市場，晚餐後可於碼頭搭乘遊船。", map: "https://www.google.com/maps/search/ICONSIAM", transport: "接駁船" },
+                { t: "22:00", title: "返回飯店", desc: "搭乘 BTS/Grab 返回飯店。", transport: "BTS/Grab" }
+            ],
+            4: [
+                { t: "07:30", title: "水上市場一日遊", desc: "前往集合點。<br><a href='https://s.klook.com/c/BXG5OW801n' target='_blank' class='text-teal-600 underline font-bold'>Klook 行程連結</a>", map: "https://www.google.com/maps/search/Central+World", transport: "BTS/Grab" },
+                { t: "10:00", title: "丹嫩莎朵水上市場", desc: "體驗手搖船。", map: "https://www.google.com/maps/search/Damnoen+Saduak+Floating+Market", transport: "包車" },
+                { t: "13:30", title: "美功鐵道市場", desc: "火車穿越奇景。", map: "https://www.google.com/maps/search/Maeklong+Railway+Market", transport: "包車" },
+                { t: "19:00", title: "晚餐：建興酒家", desc: "Siam Square One / Central World 分店。", map: "https://www.google.com/maps/search/Somboon+Seafood+Siam+Square+One", transport: "包車/BTS" },
+                { t: "20:30", title: "Big C 採購", desc: "Chit Lom 站，買完回飯店打包。", map: "https://www.google.com/maps/search/Big+C+Supercenter+Ratchadamri", transport: "步行" },
+                { t: "22:00", title: "返回飯店", desc: "搭乘 BTS 返回 Asoke，整理行李。", transport: "BTS" }
+            ],
+            5: [
+                { t: "09:00", title: "恰途洽週末市集", desc: "最後衝刺採買。", map: "https://www.google.com/maps/search/Chatuchak+Weekend+Market", transport: "BTS/MRT" },
+                { t: "12:00", title: "午餐：市集美食", desc: "推薦：椰子冰淇淋、烤肉串。", map: "https://www.google.com/maps/search/Chatuchak+Weekend+Market", transport: "步行" },
+                { t: "14:00", title: "前往機場", desc: "預留時間前往 BKK。", map: "https://www.google.com/maps/search/Suvarnabhumi+Airport", transport: "Grab/機場快線" },
+                { t: "17:40", title: "返程 JX746", desc: "平安賦歸。", transport: "飛機" }
+            ]
         };
 
-        const AppState = {
-            chatHistory: [{ role: 'model', parts: [{ text: "您好！我是您的 AI 操盤助手。請在左側貼上 K 線圖，我將為您解析 MA 策略。" }] }],
-            currentBase64: null,
-            imageAnalysisContext: "",
-            currentSymbol: "AAPL",
-            quickChips: ['AAPL', 'NVDA', 'TSLA', 'BTCUSD'], 
+        const michelinFood = [
+            { name: "Jeh O Chula", note: "媽媽麵海鮮鍋 (建議預約/外帶)", map: "https://www.google.com/maps/search/Jeh+O+Chula" },
+            { name: "Somboon Seafood", note: "建興酒家，必點咖哩螃蟹", map: "https://www.google.com/maps/search/Somboon+Seafood" },
+            { name: "R-Haan", note: "米其林二星高級泰菜", map: "https://www.google.com/maps/search/R-Haan" },
+            { name: "Blue Elephant", note: "傳統宮廷菜", map: "https://www.google.com/maps/search/Blue+Elephant+Bangkok" },
+            { name: "Baan Phadthai", note: "米其林推薦河粉", map: "https://www.google.com/maps/maps/search/?api=1&query=Baan+Phadthai" }
+        ];
 
-            init: function() {
-                this.loadSettings();
-                this.renderQuickChips();
-                this.renderChatLog();
-                this.updateTradingView();
-                this.setupEventListeners();
-                this.switchMobileView('chart');
-            },
+        const streetFood = [
+            { name: "泰式奶茶", note: "Cha Tra Mue (手標)", map: "https://www.google.com/maps/search/Cha+Tra+Mue" },
+            { name: "芒果糯米飯", note: "Mae Varee (Thong Lor)", map: "https://www.google.com/maps/search/Mae+Varee+Mango+Sticky+Rice" },
+            { name: "香蕉煎餅", note: "路邊攤必吃", map: "" },
+            { name: "泰式船麵", note: "勝利紀念碑", map: "https://www.google.com/maps/search/Boat+Noodle+Alley" }
+        ];
 
-            loadSettings: function() {
-                let key = localStorage.getItem('gemini_api_key') || PRE_CONFIGURED_API_KEY;
-                if (key) {
-                    document.getElementById('api-key-input').value = key;
-                    document.getElementById('mob-api-key').value = key;
-                }
-                const sym = localStorage.getItem('last_stock_symbol');
-                if (sym) {
-                    document.getElementById('stock-symbol').value = sym;
-                    this.currentSymbol = sym;
-                }
-                const savedChips = JSON.parse(localStorage.getItem('quick_chips'));
-                if (savedChips && Array.isArray(savedChips)) this.quickChips = savedChips;
-            },
+        // NEW: Mall Food
+        const mallFood = [
+            { name: "Terminal 21 - Pier 21", note: "5F 美食街，CP值超高！必喝現打果汁、芒果糯米飯。", map: "https://www.google.com/maps/search/Pier+21+Food+Court" },
+            { name: "Iconsiam - SookSiam", note: "G樓 室內水上市場，匯集全泰國特色小吃。", map: "https://www.google.com/maps/search/SookSiam" },
+            { name: "Thipsamai (Iconsiam)", note: "6F 鬼門炒河粉分店，免去老店排隊之苦。", map: "https://www.google.com/maps/search/Thipsamai+Iconsiam" },
+            { name: "After You (Iconsiam)", note: "6F 泰國必吃日式刨冰，招牌蜜糖吐司。", map: "https://www.google.com/maps/search/After+You+Dessert+Cafe+Iconsiam" }
+        ];
 
-            saveSettings: function() {
-                const key = document.getElementById('api-key-input').value.trim();
-                if (key) {
-                    localStorage.setItem('gemini_api_key', key);
-                    Toast.show('API Key 已儲存');
-                }
-            },
+        const bigCItems = [
+            { name: "Bento 魷魚片", icon: "fa-shrimp", color: "text-red-500" },
+            { name: "小老闆海苔", icon: "fa-leaf", color: "text-green-600" },
+            { name: "皇家蜂蜜", icon: "fa-flask", color: "text-yellow-500" },
+            { name: "手標紅茶粉", icon: "fa-mug-hot", color: "text-red-600" },
+            { name: "Pocky 泰國版", icon: "fa-cookie-bite", color: "text-pink-500" },
+            { name: "MAMA 泡麵", icon: "fa-bowl-food", color: "text-orange-500" },
+            { name: "Counterpain", icon: "fa-briefcase-medical", color: "text-blue-600" },
+            { name: "薄荷吸鼻劑", icon: "fa-wind", color: "text-teal-500" },
+            { name: "興太太肥皂", icon: "fa-soap", color: "text-emerald-600" },
+            { name: "藍象料理包", icon: "fa-utensils", color: "text-yellow-600" },
+            { name: "蛇牌痱子粉", icon: "fa-snowflake", color: "text-blue-400" },
+            { name: "椰子油", icon: "fa-bottle-droplet", color: "text-amber-500" },
+            { name: "大哥花生豆", icon: "fa-jar", color: "text-orange-600" },
+            { name: "皇家牛奶片", icon: "fa-cow", color: "text-slate-600" },
+            { name: "青草膏", icon: "fa-jar", color: "text-green-700" }
+        ];
+
+        const bangkokGifts = [
+            { name: "NaRaYa 曼谷包", icon: "fa-bag-shopping", color: "text-pink-600" },
+            { name: "泰國絲綢", icon: "fa-shirt", color: "text-purple-600" },
+            { name: "大象褲", icon: "fa-socks", color: "text-indigo-600" },
+            { name: "香氛 / Spa用品", icon: "fa-spray-can-sparkles", color: "text-rose-500" },
+            { name: "水果乾", icon: "fa-lemon", color: "text-yellow-500" },
+            { name: "Mistine 彩妝", icon: "fa-palette", color: "text-fuchsia-600" }
+        ];
+
+        const massages = [
+            { name: "Health Land Asoke", link: "https://www.healthlandspa.com/", map: "https://www.google.com/maps/search/Health+Land+Asoke" },
+            { name: "Urban Retreat Asoke", link: "https://www.urbanretreatspa.net/", map: "https://www.google.com/maps/search/Urban+Retreat+Asoke" },
+            { name: "Lek Massage Asoke", link: "https://lekmassagebangkok.com/", map: "https://www.google.com/maps/search/Lek+Massage+Asoke" },
+            { name: "Let's Relax (T21)", link: "https://letsrelaxspa.com/", map: "https://www.google.com/maps/search/Lets+Relax+Spa+Terminal+21" },
+            { name: "Asia Herb (Sukhumvit)", link: "https://www.asiaherbassociation.com/", map: "https://www.google.com/maps/search/Asia+Herb+Association" }
+        ];
+
+        // --- Render Logic ---
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            const targetContent = document.getElementById(id);
+            if(targetContent) targetContent.classList.add('active');
             
-            saveMobileSettings: function() {
-                const key = document.getElementById('mob-api-key').value.trim();
-                if (key) {
-                    localStorage.setItem('gemini_api_key', key);
-                    document.getElementById('api-key-input').value = key;
-                    Toast.show('API Key 已儲存');
-                }
-                this.toggleSettings();
-            },
-
-            toggleSettings: function() {
-                const modal = document.getElementById('settings-modal');
-                if (modal.classList.contains('hidden')) modal.classList.remove('hidden');
-                else modal.classList.add('hidden');
-            },
-
-            // --- Chips Logic (FIXED & ROBUST) ---
-            renderQuickChips: function() {
-                const container = document.getElementById('quick-chips-container');
-                container.innerHTML = '';
-                this.quickChips.forEach(chip => {
-                    // Create Container DIV
-                    const div = document.createElement('div');
-                    div.className = 'chip-container';
-                    
-                    // Create Text Span (Load Chart)
-                    const span = document.createElement('span');
-                    span.className = 'chip-text';
-                    span.innerText = chip;
-                    span.onclick = () => this.setSymbol(chip);
-
-                    // Create Delete Button (Delete Chip)
-                    const delBtn = document.createElement('div');
-                    delBtn.className = 'chip-delete';
-                    delBtn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-                    delBtn.onclick = (e) => {
-                        e.stopPropagation(); // Stop bubble
-                        this.removeQuickChip(chip);
-                    };
-
-                    div.appendChild(span);
-                    div.appendChild(delBtn);
-                    container.appendChild(div);
-                });
-            },
-
-            addQuickChip: function() {
-                const symbol = prompt("請輸入股票代號 (例如: AMD):");
-                if (symbol) {
-                    const s = symbol.toUpperCase().trim();
-                    if (s && !this.quickChips.includes(s)) {
-                        this.quickChips.push(s);
-                        this.saveChips();
-                        this.renderQuickChips();
-                        Toast.show(`已新增 ${s}`);
-                    }
-                }
-            },
-
-            removeQuickChip: function(symbol) {
-                if (confirm(`確定移除 ${symbol} 嗎？`)) {
-                    this.quickChips = this.quickChips.filter(c => c !== symbol);
-                    this.saveChips();
-                    this.renderQuickChips();
-                    Toast.show(`已移除 ${symbol}`);
-                }
-            },
-
-            saveChips: function() {
-                localStorage.setItem('quick_chips', JSON.stringify(this.quickChips));
-            },
-
-            setSymbol: function(symbol) {
-                document.getElementById('stock-symbol').value = symbol;
-                this.updateTradingView();
-            },
-
-            // --- Layout ---
-            switchMobileView: function(view) {
-                const pChart = document.getElementById('panel-chart');
-                const pAI = document.getElementById('panel-ai');
-                const bChart = document.getElementById('mob-btn-chart');
-                const bAI = document.getElementById('mob-btn-ai');
-
-                if (view === 'chart') {
-                    pChart.classList.remove('hidden'); pAI.classList.add('hidden'); pAI.classList.remove('flex');
-                    bChart.className = 'flex flex-col items-center justify-center w-full h-full text-emerald-600 transition-colors relative';
-                    bAI.className = 'flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-600 transition-colors';
-                } else {
-                    pChart.classList.add('hidden'); pAI.classList.remove('hidden'); pAI.classList.add('flex');
-                    bAI.className = 'flex flex-col items-center justify-center w-full h-full text-emerald-600 transition-colors relative';
-                    bChart.className = 'flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-600 transition-colors';
-                }
-            },
-
-            switchRightTab: function(tabName) {
-                const vAnalysis = document.getElementById('view-analysis');
-                const vChat = document.getElementById('view-chat');
-                const bAnalysis = document.getElementById('btn-right-analysis');
-                const bChat = document.getElementById('btn-right-chat');
-
-                const activeClass = "flex-1 py-4 text-sm font-bold text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/30 transition-all flex items-center justify-center gap-2";
-                const inactiveClass = "flex-1 py-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2";
-
-                if (tabName === 'analysis') {
-                    vAnalysis.classList.remove('hidden'); setTimeout(()=>vAnalysis.classList.remove('opacity-0'),10); vChat.classList.add('hidden');
-                    bAnalysis.className = activeClass; bChat.className = inactiveClass;
-                } else {
-                    vAnalysis.classList.add('hidden'); vAnalysis.classList.add('opacity-0'); vChat.classList.remove('hidden');
-                    bChat.className = activeClass; bAnalysis.className = inactiveClass;
-                    this.scrollToBottom();
-                }
-            },
-
-            scrollToBottom: function() {
-                const log = document.getElementById('chat-log');
-                log.scrollTop = log.scrollHeight;
-            },
-
-            // --- Chart (Auto MA Injection) ---
-            updateTradingView: function() {
-                let val = document.getElementById('stock-symbol').value.toUpperCase().trim() || "AAPL";
-                if (val !== this.currentSymbol) this.clearContext();
-                this.currentSymbol = val;
-                localStorage.setItem('last_stock_symbol', val);
-                
-                document.getElementById('tradingview_widget').innerHTML = "";
-                new TradingView.widget({
-                    "autosize": true, 
-                    "symbol": val, 
-                    "interval": "D", 
-                    "timezone": "Asia/Taipei", 
-                    "theme": "light", 
-                    "style": "1", 
-                    "locale": "zh_TW", 
-                    "toolbar_bg": "#f1f3f6", 
-                    "enable_publishing": false, 
-                    "allow_symbol_change": true, 
-                    "container_id": "tradingview_widget",
-                    // Inject 3 Moving Averages with specific inputs
-                    "studies": [
-                        { "id": "MASimple@tv-basicstudies", "inputs": { "length": 20 } },
-                        { "id": "MASimple@tv-basicstudies", "inputs": { "length": 50 } },
-                        { "id": "MASimple@tv-basicstudies", "inputs": { "length": 200 } }
-                    ],
-                    "hide_side_toolbar": false
-                });
-            },
-
-            clearContext: function() {
-                this.imageAnalysisContext = "";
-                document.getElementById('chat-context-bar').classList.add('hidden');
-            },
-
-            // --- Gemini Core ---
-            setupEventListeners: function() {
-                const drop = document.getElementById('drop-area');
-                document.addEventListener('paste', e => {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                    const items = e.clipboardData.items;
-                    for (let i of items) {
-                        if (i.kind === 'file' && i.type.startsWith('image/')) {
-                            e.preventDefault(); this.handleFiles([i.getAsFile()]); this.closePasteOverlay();
-                            if(window.innerWidth < 1024) this.switchMobileView('ai');
-                            return;
-                        }
-                    }
-                });
-                drop.onclick = () => document.getElementById('fileElem').click();
-                drop.ondragover = e => { e.preventDefault(); drop.classList.add('active'); };
-                drop.ondragleave = () => drop.classList.remove('active');
-                drop.ondrop = e => { e.preventDefault(); drop.classList.remove('active'); this.handleFiles(e.dataTransfer.files); };
-            },
-
-            triggerPasteMode: function() {
-                const el = document.getElementById('paste-overlay');
-                el.classList.remove('hidden'); setTimeout(()=>el.classList.remove('opacity-0'),10);
-            },
-            closePasteOverlay: function(e) {
-                if(e) e.stopPropagation();
-                const el = document.getElementById('paste-overlay');
-                el.classList.add('opacity-0'); setTimeout(()=>el.classList.add('hidden'),300);
-            },
-
-            handleFiles: function(files) {
-                if (!files.length) return;
-                const file = files[0];
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    document.getElementById('preview-img').src = reader.result;
-                    document.getElementById('preview-img').style.opacity = '1';
-                    document.getElementById('upload-prompt').classList.add('hidden');
-                    document.getElementById('analyze-overlay').classList.remove('hidden');
-                    
-                    const base64 = reader.result.split(',')[1];
-                    this.currentBase64 = { data: base64, mimeType: file.type || 'image/jpeg' };
-                    Toast.show('截圖已載入');
-                    this.analyzeWithGemini();
-                };
-                reader.readAsDataURL(file);
-            },
-
-            analyzeWithGemini: async function() {
-                const apiKey = document.getElementById('api-key-input').value.trim();
-                if(!apiKey) { Toast.show('請設定 API Key', 'error'); this.toggleSettings(); return; }
-                if(!this.currentBase64) return;
-
-                this.switchRightTab('analysis');
-                document.getElementById('empty-state-vision').classList.add('hidden');
-                document.getElementById('ai-content-vision').classList.add('hidden');
-                document.getElementById('loading-spinner-vision').classList.remove('hidden');
-                document.getElementById('loading-spinner-vision').classList.add('flex');
-                this.imageAnalysisContext = "";
-
-                const prompt = `你是一位美股技術分析專家。目標：${this.currentSymbol}。分析 K 線圖 MA(20,50,200) 排列。輸出繁中 Markdown：1.趨勢形態 2.操作建議(買入/賣出/觀望) 3.關鍵價位。重點關鍵字請加粗。`;
-                
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: this.currentBase64 }] }] })
-                    });
-                    const data = await response.json();
-                    if(data.error) throw new Error(data.error.message);
-
-                    let txt = data.candidates[0].content.parts[0].text;
-                    txt = txt.replace(/(買入|做多)/g, '<span class="hl-buy">$1</span>').replace(/(賣出|止損)/g, '<span class="hl-sell">$1</span>').replace(/(觀望|盤整)/g, '<span class="hl-wait">$1</span>');
-                    
-                    const div = document.getElementById('ai-content-vision');
-                    div.innerHTML = marked.parse(txt);
-                    this.imageAnalysisContext = txt;
-                    
-                    document.getElementById('loading-spinner-vision').classList.remove('flex');
-                    document.getElementById('loading-spinner-vision').classList.add('hidden');
-                    div.classList.remove('hidden');
-                    document.getElementById('chat-context-bar').classList.remove('hidden');
-                    document.getElementById('context-symbol').innerText = this.currentSymbol;
-                    Toast.show('分析完成');
-                } catch(e) {
-                    console.error(e);
-                    document.getElementById('loading-spinner-vision').classList.remove('flex');
-                    document.getElementById('loading-spinner-vision').classList.add('hidden');
-                    document.getElementById('empty-state-vision').classList.remove('hidden');
-                    Toast.show('分析失敗: ' + e.message, 'error');
-                }
-            },
-
-            sendChatMessage: async function() {
-                const key = document.getElementById('api-key-input').value.trim();
-                const input = document.getElementById('chat-input');
-                const q = input.value.trim();
-                if(!key) { Toast.show('請設定 API Key', 'error'); return; }
-                if(!q) return;
-
-                this.chatHistory.push({ role: 'user', parts: [{ text: q }] });
-                input.value = '';
-                this.renderChatLog();
-
-                const log = document.getElementById('chat-log');
-                const loadId = `load-${Date.now()}`;
-                log.innerHTML += `<div id="${loadId}" class="flex justify-start"><div class="chat-bubble ai-bubble text-gray-400 text-xs animate-pulse">...</div></div>`;
-                this.scrollToBottom();
-
-                let sys = `你是一位專業操盤手助手。股票: ${this.currentSymbol}。`;
-                if(this.imageAnalysisContext) sys += `\n參考圖表分析:\n${this.imageAnalysisContext}`;
-
-                try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: this.chatHistory, systemInstruction: { parts: [{ text: sys }] } })
-                    });
-                    const data = await res.json();
-                    document.getElementById(loadId).remove();
-                    if(data.error) throw new Error(data.error.message);
-                    
-                    const ans = data.candidates[0].content.parts[0].text;
-                    this.chatHistory.push({ role: 'model', parts: [{ text: ans }] });
-                    this.renderChatLog();
-                } catch(e) {
-                    document.getElementById(loadId).remove();
-                    this.chatHistory.pop();
-                    Toast.show('發送失敗', 'error');
-                }
-            },
-
-            renderChatLog: function() {
-                const log = document.getElementById('chat-log');
-                log.innerHTML = '';
-                this.chatHistory.forEach(m => {
-                    const isUser = m.role === 'user';
-                    log.innerHTML += `<div class="flex justify-${isUser?'end':'start'}"><div class="chat-bubble ${isUser?'user-bubble':'ai-bubble prose prose-sm max-w-none'}">${isUser ? m.parts[0].text : marked.parse(m.parts[0].text)}</div></div>`;
-                });
-                this.scrollToBottom();
+            document.querySelectorAll('.nav-item').forEach(e => {
+                e.classList.remove('active');
+                e.classList.add('text-slate-400');
+            });
+            const activeNavBtn = document.getElementById('tab-'+id);
+            if(activeNavBtn) {
+                 activeNavBtn.classList.add('active');
+                 activeNavBtn.classList.remove('text-slate-400');
             }
-        };
+            window.scrollTo(0,0);
+        }
 
-        window.onload = () => AppState.init();
+        // --- AI Logic ---
+        function switchAiTab(tab) {
+            if (tab === 'chat') {
+                document.getElementById('ai-tab-chat').classList.add('border-b-2', 'border-indigo-600', 'bg-indigo-50', 'text-indigo-600');
+                document.getElementById('ai-tab-chat').classList.remove('text-slate-500');
+                document.getElementById('ai-tab-translate').classList.remove('border-b-2', 'border-indigo-600', 'bg-indigo-50', 'text-indigo-600');
+                document.getElementById('ai-tab-translate').classList.add('text-slate-500');
+                document.getElementById('ai-view-chat').classList.remove('hidden');
+                document.getElementById('ai-view-translate').classList.add('hidden');
+                document.getElementById('ai-input-area').classList.remove('hidden');
+                document.getElementById('ai-input-area').classList.add('flex');
+            } else {
+                document.getElementById('ai-tab-translate').classList.add('border-b-2', 'border-indigo-600', 'bg-indigo-50', 'text-indigo-600');
+                document.getElementById('ai-tab-translate').classList.remove('text-slate-500');
+                document.getElementById('ai-tab-chat').classList.remove('border-b-2', 'border-indigo-600', 'bg-indigo-50', 'text-indigo-600');
+                document.getElementById('ai-tab-chat').classList.add('text-slate-500');
+                document.getElementById('ai-view-translate').classList.remove('hidden');
+                document.getElementById('ai-view-chat').classList.add('hidden');
+                document.getElementById('ai-input-area').classList.add('hidden');
+                document.getElementById('ai-input-area').classList.remove('flex');
+            }
+        }
+
+        async function callGemini(prompt) {
+            // Using placeholder logic for client-side demo
+            // In a real app, this should call a backend proxy to protect the API key
+            // or use the provided environment key if available securely.
+            // Since this is a static file, we will simulate a smart response.
+            
+            // Note: Actual API calls require a valid API Key. 
+            // Since I cannot expose a real key here, this function simulates the logic.
+            
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            if (!apiKey) {
+                return "請先設定 API Key 才能使用 AI 功能。 (此為模擬回應)";
+            }
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "You are a helpful Bangkok travel guide for a family trip. You provide concise, practical advice, recommend food, and translate phrases to Thai when asked. Answer in Traditional Chinese (Taiwan)." }] }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，我現在無法回答。";
+            } catch (error) {
+                console.error("AI Error:", error);
+                return "連線發生錯誤，請稍後再試。";
+            }
+        }
+
+        async function handleChat() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Add User Message
+            const chatView = document.getElementById('ai-view-chat');
+            chatView.innerHTML += `<div class="chat-user chat-bubble">${text}</div>`;
+            input.value = '';
+            
+            // Add Loading
+            const loadingId = 'loading-' + Date.now();
+            chatView.innerHTML += `
+                <div id="${loadingId}" class="chat-ai chat-bubble typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>`;
+            chatView.scrollTop = chatView.scrollHeight;
+
+            // Call API
+            const response = await callGemini(text);
+            
+            // Remove Loading & Add Response
+            document.getElementById(loadingId).remove();
+            // Parse markdown simply
+            const htmlResponse = marked.parse(response);
+            chatView.innerHTML += `<div class="chat-ai chat-bubble prose prose-sm max-w-none">${htmlResponse}</div>`;
+            chatView.scrollTop = chatView.scrollHeight;
+        }
+
+        async function handleTranslate() {
+            const input = document.getElementById('trans-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const resultDiv = document.getElementById('trans-result');
+            resultDiv.innerHTML = '<div class="text-center text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>翻譯中...</div>';
+            resultDiv.classList.remove('hidden');
+
+            const prompt = `Translate this phrase to Thai: "${text}". 
+            Format the output exactly like this:
+            [Thai Text]
+            [Thai Pronunciation (in Traditional Chinese homophones or English)]
+            [Meaning]
+            `;
+
+            const response = await callGemini(prompt);
+            
+            // Simple format processing
+            const formatted = response.replace(/\n/g, '<br>');
+            
+            resultDiv.innerHTML = `
+                <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4 text-center">
+                    <div class="text-xs text-slate-500 mb-1">中文：${text}</div>
+                    <div class="text-2xl font-bold text-indigo-700 mb-2">${response.split('\n')[0] || '...'}</div>
+                    <div class="text-sm text-slate-600 bg-white/50 py-1 rounded">${response}</div>
+                </div>
+            `;
+        }
+
+
+        function switchDay(day) {
+            document.querySelectorAll('.day-btn').forEach(b => {
+                b.className = 'day-btn flex-shrink-0 bg-white text-slate-500 border border-slate-200 px-5 py-2 rounded-full text-sm font-medium transition';
+            });
+            const btns = document.querySelectorAll('.day-btn');
+            const dayIndex = day - 1; // Array index is 0-based
+            if(btns[dayIndex]) {
+                btns[dayIndex].className = 'day-btn active flex-shrink-0 bg-teal-600 text-white px-5 py-2 rounded-full text-sm font-bold shadow-md whitespace-nowrap';
+            }
+
+            const list = itineraryData[day];
+            let html = `<div class="timeline-line absolute h-full border-l-2 border-slate-200 left-5 top-3 bottom-3"></div>`;
+            
+            list.forEach(item => {
+                html += `
+                <div class="relative z-10 mb-6 pl-12 pr-2 timeline-item">
+                    <div class="absolute left-3 top-1 w-4 h-4 bg-white border-2 border-teal-500 rounded-full shadow-sm"></div>
+                    <div class="app-card">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">${item.t}</span>
+                            ${item.map ? `<a href="${item.map}" target="_blank" class="text-blue-500 bg-blue-50 w-7 h-7 flex items-center justify-center rounded-full active:bg-blue-100"><i class="fa-solid fa-location-dot text-sm"></i></a>` : ''}
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-base mb-1">${item.title}</h3>
+                        ${item.transport ? `<div class="transport-badge"><i class="fa-solid fa-diamond-turn-right"></i> ${item.transport}</div>` : ''}
+                        <p class="text-sm text-slate-600 leading-relaxed mt-1">${item.desc}</p>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('timeline-container').innerHTML = html;
+        }
+
+        function renderFoodList(id, list) {
+            let html = '';
+            list.forEach(f => {
+                html += `
+                <div class="app-card flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-slate-800">${f.name}</div>
+                        <div class="text-xs text-slate-500 mt-1">${f.note}</div>
+                    </div>
+                    ${f.map ? `<a href="${f.map}" target="_blank" class="w-9 h-9 bg-slate-50 rounded-full flex items-center justify-center text-blue-500 hover:bg-blue-50"><i class="fa-solid fa-location-dot"></i></a>` : ''}
+                </div>`;
+            });
+            document.getElementById(id).innerHTML = html;
+        }
+
+        function renderShopping() {
+            let bigCHtml = '';
+            bigCItems.forEach(item => {
+                bigCHtml += `
+                <a href="https://www.google.com/search?tbm=isch&q=Big+C+${item.name}" target="_blank" class="product-card app-card flex flex-col items-center justify-center text-center p-3">
+                    <div class="icon-box bg-teal-50 text-teal-600 mb-2">
+                         <i class="fa-solid ${item.icon}"></i>
+                    </div>
+                    <div class="text-sm font-bold text-slate-700 leading-tight">${item.name}</div>
+                </a>`;
+            });
+            document.getElementById('shopping-grid').innerHTML = bigCHtml;
+
+            let giftHtml = '';
+            bangkokGifts.forEach(item => {
+                giftHtml += `
+                <div class="app-card flex flex-col items-center justify-center text-center p-4">
+                    <div class="icon-box bg-pink-50 text-pink-500 mb-2">
+                         <i class="fa-solid ${item.icon}"></i>
+                    </div>
+                    <div class="text-sm font-bold text-slate-700">${item.name}</div>
+                </div>`;
+            });
+            document.getElementById('bangkok-gift-grid').innerHTML = giftHtml;
+        }
+
+        function renderMassage() {
+            let html = '';
+            massages.forEach(m => {
+                html += `
+                <div class="app-card flex justify-between items-center">
+                    <div class="font-bold text-slate-800">${m.name}</div>
+                    <div class="flex gap-2">
+                        <a href="${m.link}" target="_blank" class="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-200">官網</a>
+                        <a href="${m.map}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100"><i class="fa-solid fa-location-dot mr-1"></i></a>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('massage-list').innerHTML = html;
+        }
+
+        // Init
+        window.onload = function() {
+            switchDay(1);
+            renderFoodList('mall-food-list', mallFood);
+            renderFoodList('jodd-food-list', joddFairsFood); // Add Jodd Fairs Render
+            renderFoodList('michelin-list', michelinFood);
+            renderFoodList('street-food-list', streetFood);
+            renderShopping();
+            renderMassage();
+        }
     </script>
 </body>
 </html>
